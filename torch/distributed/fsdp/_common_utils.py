@@ -27,7 +27,6 @@ import torch.distributed as dist
 import torch.distributed.fsdp.flat_param as flat_param_file
 import torch.nn as nn
 from torch.distributed._composable_state import _get_module_state, _State
-from torch.distributed._tensor.device_mesh import DeviceMesh
 from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
     _CHECKPOINT_PREFIX,
 )
@@ -138,7 +137,7 @@ class _FSDPState(_State):
         self._gradient_postdivide_factor: int = 0
         self._comm_hook: Optional[Callable] = None
         self._comm_hook_state: Optional[Any] = None
-        self._device_mesh: Optional[DeviceMesh] = None
+        self._device_mesh = None
 
 
 def _get_module_fsdp_state(module: nn.Module) -> Optional[_FSDPState]:
