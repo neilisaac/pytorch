@@ -60,9 +60,7 @@ class Threshold(Module):
 
     def extra_repr(self):
         inplace_str = ', inplace=True' if self.inplace else ''
-        return 'threshold={}, value={}{}'.format(
-            self.threshold, self.value, inplace_str
-        )
+        return f'threshold={self.threshold}, value={self.value}{inplace_str}'
 
 
 class ReLU(Module):
@@ -237,9 +235,7 @@ class Hardtanh(Module):
 
     def extra_repr(self) -> str:
         inplace_str = ', inplace=True' if self.inplace else ''
-        return 'min_val={}, max_val={}{}'.format(
-            self.min_val, self.max_val, inplace_str
-        )
+        return f'min_val={self.min_val}, max_val={self.max_val}{inplace_str}'
 
 
 class ReLU6(Hardtanh):
@@ -888,21 +884,15 @@ class Softshrink(Module):
 
 
 def _check_arg_device(x: Optional[torch.Tensor]) -> bool:
-    if x is None:
-        return True
-    else:
+    if x is not None:
         return x.device.type in ["cpu", "cuda", torch.utils.backend_registration._privateuse1_backend_name]
-
-    return False
+    return True
 
 
 def _arg_requires_grad(x: Optional[torch.Tensor]) -> bool:
-    if x is None:
-        return False
-    else:
+    if x is not None:
         return x.requires_grad
-
-    return True
+    return False
 
 
 class MultiheadAttention(Module):

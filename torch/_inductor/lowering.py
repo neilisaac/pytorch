@@ -664,7 +664,7 @@ def squeeze(x, dim=None):
 
     new_shape = []
     for d, s in enumerate(x.get_size()):
-        if not (d in dims and V.graph.sizevars.shape_env.evaluate_expr(sympy.Eq(s, 1))):
+        if not (d in dims and V.graph.sizevars.evaluate_expr(sympy.Eq(s, 1))):
             new_shape.append(s)
 
     # squeeze does nothing if the size isn't 1
@@ -838,9 +838,9 @@ def slice_(x, dim=0, start=0, end=2**63, step=1):
     assert isinstance(x, TensorBox)
     dim = _validate_dim(x, dim, 0)
     dim_size = x.get_size()[dim]
-    if V.graph.sizevars.shape_env.evaluate_expr(sympy.Lt(start + dim_size, 0)):
+    if V.graph.sizevars.evaluate_expr(sympy.Lt(start + dim_size, 0)):
         start = 0
-    if V.graph.sizevars.shape_env.evaluate_expr(sympy.Lt(end + dim_size, 0)):
+    if V.graph.sizevars.evaluate_expr(sympy.Lt(end + dim_size, 0)):
         end = 0
     return TensorBox(ir.SliceView.create(x.data, dim, start, end, step))
 
@@ -960,8 +960,7 @@ def diagonal(input, offset: int = 0, dim1: int = 0, dim2: int = 1):
         dim1 != dim2, lambda: f"diagonal dimensions cannot be identical {dim1}, {dim2}"
     )
 
-    evaluate_expr = V.graph.sizevars.shape_env.evaluate_expr
-    offset_negative = evaluate_expr(sympy.Lt(offset, 0))
+    offset_negative = V.graph.sizevars.evaluate_expr(sympy.Lt(offset, 0))
     if offset_negative:
         diag_size = max(min(original_shape[dim1] + offset, original_shape[dim2]), 0)
     else:
@@ -1116,6 +1115,7 @@ def register_onednn_fusion_ops():
             torch.ops.mkldnn._convolution_pointwise_,
             torch.ops.mkldnn._convolution_transpose_pointwise,
             torch.ops.mkldnn._linear_pointwise,
+            aten.mkldnn_rnn_layer.default,
         ]
 
         @register_lowering(torch.ops.mkldnn._convolution_pointwise)
@@ -1254,6 +1254,47 @@ def register_onednn_fusion_ops():
                     scalars,
                     algorithm,
                 )
+            )
+
+        @register_lowering(aten.mkldnn_rnn_layer.default)
+        def mkldnn_rnn_layer(
+            x: TensorBox,
+            w0: TensorBox,
+            w1: TensorBox,
+            w2: TensorBox,
+            w3: TensorBox,
+            hx: TensorBox,
+            cx: TensorBox,
+            reverse: bool,
+            batch_sizes: List[int],
+            mode: int,
+            hidden_size: int,
+            num_layers: int,
+            has_biases: bool,
+            bidirectional: bool,
+            batch_first: bool,
+            train: bool,
+        ):
+            return pytree.tree_map(
+                TensorBox.create,
+                ir.MkldnnRnnLayer.create(
+                    x,
+                    w0,
+                    w1,
+                    w2,
+                    w3,
+                    hx,
+                    cx,
+                    reverse,
+                    batch_sizes,
+                    mode,
+                    hidden_size,
+                    num_layers,
+                    has_biases,
+                    bidirectional,
+                    batch_first,
+                    train,
+                ),
             )
 
         if torch._C.has_mkl:
@@ -1600,6 +1641,11 @@ def _inductor_bucketize(
             input, boundaries, out_int32=out_int32, right=right
         )
 
+    # The entire boundaries tensor needs to be used by ops.bucketize, so we
+    # need to realize it into global memory; or in other words, we can't
+    # guarantee that boundaries.get_name() (used below) will exist unless
+    # we call boundaries.realize().
+    boundaries.realize()
     boundaries_size = boundaries.get_size()[0]
     boundaries_loader = boundaries.make_loader()
     device = input.get_device()
@@ -1743,7 +1789,6 @@ make_fallback(aten.max_unpool2d)
 make_fallback(aten.max_unpool3d)
 make_fallback(aten.median)
 make_fallback(aten.mode)
-make_fallback(aten.multilabel_margin_loss_forward)
 make_fallback(aten.nanmedian)
 make_fallback(aten.ormqr)
 make_fallback(aten._pdist_forward)
@@ -1796,7 +1841,6 @@ make_fallback(aten.fractional_max_pool2d_backward)
 make_fallback(aten.fractional_max_pool3d_backward)
 make_fallback(aten._linalg_check_errors)
 make_fallback(aten.max_pool3d_with_indices_backward)
-make_fallback(aten.multilabel_margin_loss_backward)
 make_fallback(aten._pdist_backward)
 make_fallback(aten.reflection_pad1d_backward)
 make_fallback(aten.replication_pad1d_backward)
@@ -1888,7 +1932,7 @@ def select_scatter(x, src, dim: int, index: int):
     assert x.get_dtype() == src.get_dtype()
     x_loader = x.make_loader()
     dim = _validate_dim(x, dim, 0)
-    if index < 0:
+    if V.graph.sizevars.evaluate_expr(sympy.Lt(index, 0)):
         index = index + x.get_size()[dim]
     V.graph.sizevars.guard_leq(0, index)
     V.graph.sizevars.guard_lt(index, x.get_size()[dim])
@@ -1919,9 +1963,9 @@ def slice_scatter(x, src, dim=0, start=None, end=None, step=1):
     x_loader = x.make_loader()
     dim = _validate_dim(x, dim, 0)
     dim_size = x.get_size()[dim]
-    if start is not None and start < 0:
+    if start is not None and V.graph.sizevars.evaluate_expr(sympy.Lt(start, 0)):
         start = start + dim_size
-    if end is not None and end < 0:
+    if end is not None and V.graph.sizevars.evaluate_expr(sympy.Lt(end, 0)):
         end = end + dim_size
     if start is None:
         start = 0
