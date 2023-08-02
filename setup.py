@@ -1092,6 +1092,7 @@ def print_box(msg):
 def main():
     # the list of runtime dependencies required by this built package
     install_requires = [
+        "mkl==2021.4.0",
         "filelock",
         "typing-extensions",
         "sympy",
