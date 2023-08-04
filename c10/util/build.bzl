@@ -45,6 +45,7 @@ def define_targets(rules):
             "//c10:using_glog": ["@com_github_glog//:glog"],
             "//conditions:default": [],
         }),
+        includes = ["../.."],
     )
 
     rules.cc_library(

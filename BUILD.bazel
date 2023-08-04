@@ -1595,6 +1595,7 @@ cc_library(
         ] + torch_cuda_headers,
     ) + GENERATED_AUTOGRAD_CPP + [":version_h"],
     includes = [
+        ".",
         "torch/csrc",
         "torch/csrc/api/include",
         "torch/csrc/distributed",
