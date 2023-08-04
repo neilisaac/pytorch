@@ -150,9 +150,6 @@ cc_library(
     includes = [
         ".",
     ],
-    copts = [
-        "-std=c++14",
-    ],
     visibility = ["//visibility:public"],
     deps = [
         ":libnop",
@@ -166,9 +163,6 @@ cc_library(
     hdrs = glob(TENSORPIPE_CUDA_HEADERS) + [":tensorpipe_cuda_config_header"],
     includes = [
         ".",
-    ],
-    copts = [
-        "-std=c++14",
     ],
     visibility = ["//visibility:public"],
     deps = [
