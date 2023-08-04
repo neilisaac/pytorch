@@ -61,6 +61,7 @@ def generate_aten_impl(ctx):
     ops_dir = ctx.actions.declare_directory("aten/src/ATen/ops")
     outputs = [ops_dir] + ctx.outputs.outs
 
+    aten = Label("//aten/src/ATen")
     install_dir = paths.dirname(ops_dir.path)
     tool_inputs, tool_inputs_manifest = ctx.resolve_tools(tools = [ctx.attr.generator])
     ctx.actions.run_shell(
@@ -69,7 +70,7 @@ def generate_aten_impl(ctx):
         command = ctx.executable.generator.path + " $@",
         arguments = [
             "--source-path",
-            "aten/src/ATen",
+            aten.workspace_root + "/" + aten.package,
             "--per-operator-headers",
             "--install_dir",
             install_dir,
