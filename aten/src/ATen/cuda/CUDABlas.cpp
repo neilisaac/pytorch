@@ -700,6 +700,10 @@ void gemm_and_bias(
     abcType = CUDA_R_16F;
   } else if constexpr (std::is_same_v<Dtype, at::BFloat16>) {
     abcType = CUDA_R_16BF;
+  } else if constexpr (std::is_same_v<Dtype, at::Float8_e4m3fn>) {
+    abcType = CUDA_R_8F_E4M3;
+  } else if constexpr (std::is_same_v<Dtype, at::Float8_e5m2>) {
+    abcType = CUDA_R_8F_E5M2;
   }
 
   CuBlasLtMatmulDescriptor computeDesc(computeType, scaleType);
@@ -900,6 +904,38 @@ template void gemm_and_bias(
     int64_t mat2_ld,
     const at::BFloat16* bias,
     at::BFloat16* result_ptr,
+    int64_t result_ld,
+    GEMMAndBiasActivationEpilogue activation);
+
+template void gemm_and_bias(
+    bool transpose_mat1,
+    bool transpose_mat2,
+    int64_t m,
+    int64_t n,
+    int64_t k,
+    at::opmath_type<at::Float8_e5m2> alpha_val,
+    const at::Float8_e5m2* mat1_ptr,
+    int64_t mat1_ld,
+    const at::Float8_e5m2* mat2_ptr,
+    int64_t mat2_ld,
+    const at::Float8_e5m2* bias,
+    at::Float8_e5m2* result_ptr,
+    int64_t result_ld,
+    GEMMAndBiasActivationEpilogue activation);
+
+template void gemm_and_bias(
+    bool transpose_mat1,
+    bool transpose_mat2,
+    int64_t m,
+    int64_t n,
+    int64_t k,
+    at::opmath_type<at::Float8_e4m3fn> alpha_val,
+    const at::Float8_e4m3fn* mat1_ptr,
+    int64_t mat1_ld,
+    const at::Float8_e4m3fn* mat2_ptr,
+    int64_t mat2_ld,
+    const at::Float8_e4m3fn* bias,
+    at::Float8_e4m3fn* result_ptr,
     int64_t result_ld,
     GEMMAndBiasActivationEpilogue activation);
 
