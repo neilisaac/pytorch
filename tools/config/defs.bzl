@@ -8,7 +8,7 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 def if_cuda(if_true, if_false = []):
     """Helper for selecting based on the whether CUDA is configured. """
     return selects.with_or({
-        "@//tools/config:cuda_enabled_and_capable": if_true,
+        "@pytorch//tools/config:cuda_enabled_and_capable": if_true,
         "//conditions:default": if_false,
     })
 
