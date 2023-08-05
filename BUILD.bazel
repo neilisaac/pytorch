@@ -1715,6 +1715,7 @@ cc_library(
         ":shm",
         "@pybind11",
     ],
+    visibility = ["//visibility:public"],
 )
 
 pybind_extension(
