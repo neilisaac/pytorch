@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(__ELF__) && (defined(__x86_64__) || defined(__i386__))
+#if defined(CAFFE2_ENABLE_SDT) && defined(__ELF__) && (defined(__x86_64__) || defined(__i386__))
 #include <caffe2/core/static_tracepoint_elfx86.h>
 
 #define CAFFE_SDT(name, ...)                                         \
