@@ -6,9 +6,9 @@ cc_library(
         "include/**/*.hpp",
         "include/**/*.h",
     ]),
-    defines = [
-        "IDEEP_USE_MKL",
-    ],
+    # defines = [
+    #     "IDEEP_USE_MKL",
+    # ],
     includes = [
         "include/",
     ],

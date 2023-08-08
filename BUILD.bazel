@@ -261,7 +261,7 @@ header_template_rule(
     include = "aten/src",
     substitutions = {
         "@AT_MKLDNN_ENABLED@": "1",
-        "@AT_MKL_ENABLED@": "1",
+        "@AT_MKL_ENABLED@": "0",
         "@AT_MKL_SEQUENTIAL@": "0",
         "@AT_FFTW_ENABLED@": "0",
         "@AT_POCKETFFT_ENABLED@": "0",
@@ -329,7 +329,7 @@ intern_build_aten_ops(
         ":aten_headers",
         "@sleef",
         "@fbgemm",
-        "@mkl",
+        # "@mkl",
     ],
     extra_impls = aten_ufunc_generated_cpu_kernel_sources("aten/src/ATen/{}"),
 )
@@ -343,7 +343,7 @@ cc_library(
         ":aten_base_metal",
         ":aten_base_vulkan",
         ":aten_native_cpp",
-        ":aten_native_mkl_cpp",
+        # ":aten_native_mkl_cpp",
         ":aten_native_mkldnn_cpp",
         ":aten_native_quantized_cpp",
         ":aten_native_sparse_cpp",

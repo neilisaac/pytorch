@@ -117,7 +117,7 @@ cc_library(
         "-lgomp",
     ],
     deps = [
-        "@mkl",
+        # "@mkl",
     ] + select({
         "@pytorch//tools/config:thread_sanitizer": [],
         "//conditions:default": ["@tbb"],
