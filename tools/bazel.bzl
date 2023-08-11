@@ -13,7 +13,10 @@ def _is_cpu_static_dispatch_build():
     return False
 
 def _requires_cuda_enabled():
-    return ["@rules_cuda//cuda:is_enabled"]
+    return select({
+        "@rules_cuda//cuda:is_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    })
 
 # Rules implementation for the Bazel build system. Since the common
 # build structure aims to replicate Bazel as much as possible, most of
