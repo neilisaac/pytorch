@@ -35,7 +35,7 @@ NVCC_COPTS = [
     # Hence, we just disable this warning altogether. We may want to
     # clean up some of the clear-cut cases that could be risky, but we
     # still likely want to have this disabled for the most part.
-    "-Wno-missing-field-initializers",
+    "--compiler-options=-Wno-missing-field-initializers",
 ]
 
 def cu_library(name, srcs, copts = [], **kwargs):
