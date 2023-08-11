@@ -184,7 +184,10 @@ filegroup(
 
 filegroup(
     name = "aten_native_mkl_cpp",
-    srcs = glob(["aten/src/ATen/native/mkl/*.cpp", "aten/src/ATen/mkl/*.cpp"]),
+    srcs = glob([
+        "aten/src/ATen/native/mkl/*.cpp",
+        # "aten/src/ATen/mkl/*.cpp",
+    ]),
 )
 
 filegroup(
@@ -268,7 +271,7 @@ header_template_rule(
         "@AT_NNPACK_ENABLED@": "0",
         "@CAFFE2_STATIC_LINK_CUDA_INT@": "0",
         "@AT_BUILD_WITH_BLAS@": "1",
-        "@AT_BUILD_WITH_LAPACK@": "1",
+        "@AT_BUILD_WITH_LAPACK@": "0",
         "@AT_PARALLEL_OPENMP@": "0",
         "@AT_PARALLEL_NATIVE@": "1",
         "@AT_PARALLEL_NATIVE_TBB@": "0",
@@ -321,6 +324,7 @@ ATEN_COPTS = COMMON_COPTS + [
     "-fvisibility-inlines-hidden",
     "-fno-math-errno",
     "-fno-trapping-math",
+    "-Wno-maybe-uninitialized",
 ]
 
 intern_build_aten_ops(
@@ -343,7 +347,7 @@ cc_library(
         ":aten_base_metal",
         ":aten_base_vulkan",
         ":aten_native_cpp",
-        # ":aten_native_mkl_cpp",
+        ":aten_native_mkl_cpp",
         ":aten_native_mkldnn_cpp",
         ":aten_native_quantized_cpp",
         ":aten_native_sparse_cpp",
@@ -407,7 +411,7 @@ cc_library(
         "@cuda",
         "@cuda//:cusolver",
         "@cuda//:nvrtc",
-        "@cudnn",
+        "@cuda//:cudnn",
     ],
     alwayslink = True,
 )
@@ -423,7 +427,8 @@ torch_cuda_half_options = [
 cu_library(
     name = "aten_cuda",
     srcs = [":aten_cu_srcs"],
-    copts = ATEN_COPTS + torch_cuda_half_options,
+    copts = torch_cuda_half_options,
+    host_copts = ATEN_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":aten_cuda_cpp",
@@ -1368,6 +1373,7 @@ cc_library(
         "caffe2/image/*.h",
     ])) + [":generated_caffe2_aten_op_headers"],
     copts = CAFFE2_COPTS,
+    linkopts = ["-lblas"],
     includes = [
         "caffe2/contrib/aten",
         "caffe2/core/nomnigraph/include",
@@ -1475,14 +1481,15 @@ cc_library(
 cu_library(
     name = "caffe2_cuda",
     srcs = [":caffe2_cu_srcs"],
-    copts = CAFFE2_COPTS + torch_cuda_half_options,
+    copts = torch_cuda_half_options,
+    host_copts = CAFFE2_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":aten",
         ":caffe2_headers",
         "@cuda//:cublas",
         "@cuda//:curand",
-        "@cudnn",
+        "@cuda//:cudnn",
         "@eigen",
         "@gloo",
         "@tensorpipe//:tensorpipe_cuda",
