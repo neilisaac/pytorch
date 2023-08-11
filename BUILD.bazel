@@ -1771,6 +1771,7 @@ py_library(
         ":torch/_C.so",
         ":torch/bin/torch_shm_manager",
     ],
+    imports = ["."], # enable "import torch"
 )
 
 # cpp api tests
