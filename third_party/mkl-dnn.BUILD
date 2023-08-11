@@ -74,7 +74,9 @@ cc_library(
         "third_party/oneDNN/src/cpu/**/*.cpp",
     ], exclude=[
         "third_party/oneDNN/src/cpu/aarch64/**/*.cpp",
-    ]),
+    ]) + [
+        "third_party/oneDNN/src/common/ittnotify/jitprofiling.c",
+    ],
     hdrs = glob([
         "third_party/oneDNN/include/oneapi/dnnl/*.h",
         "third_party/oneDNN/include/oneapi/dnnl/*.hpp",
@@ -103,6 +105,9 @@ cc_library(
         "@pytorch//tools/config:thread_sanitizer": ["-DDNNL_CPU_RUNTIME=0"],
         "//conditions:default": ["-DDNNL_CPU_RUNTIME=2"],
     }),
+    local_defines = [
+        "DL_SYMBOLS=0",
+    ],
     includes = [
         "third_party/oneDNN/include/",
         "third_party/oneDNN/include/oneapi/",
