@@ -1721,7 +1721,8 @@ cc_library(
         ":torch",
         ":shm",
         "@pybind11",
-    ],
+    ] + if_cuda(["@//third_party:nccl"]),
+    alwayslink = True,
     visibility = ["//visibility:public"],
 )
 
