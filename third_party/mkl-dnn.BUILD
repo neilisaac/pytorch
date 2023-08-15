@@ -119,10 +119,11 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     linkopts = [
-        "-lgomp",
+        "-lgomp", # TODO: build with bazel?
     ],
     deps = [
         # "@mkl",
+        # TODO: "@openblas",
     ] + select({
         "@pytorch//tools/config:thread_sanitizer": [],
         "//conditions:default": ["@tbb"],
