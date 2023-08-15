@@ -1650,6 +1650,16 @@ torch_sources = ({
     GENERATED_AUTOGRAD_CPP)
 }).keys()
 
+torch_deps = [
+        ":caffe2",
+        ":torch_headers",
+        "@kineto",
+    ] + if_cuda([
+        ":torch_distributed_cuda",
+        "@cuda//:nvToolsExt",
+        "@cutlass",
+    ])
+
 cc_library(
     name = "torch_lib",
     srcs = if_cuda(glob(
@@ -1664,21 +1674,19 @@ cc_library(
     defines = [
         "CAFFE2_NIGHTLY_VERSION=20200115",
     ],
-    deps = [
-        ":caffe2",
-        ":torch_headers",
-        "@kineto",
-    ] + if_cuda([
-        ":torch_distributed_cuda",
-        "@cuda//:nvToolsExt",
-        "@cutlass",
-    ]),
+    deps = torch_deps,
     alwayslink = True,
 )
 
 cc_shared_library(
-    name = "torch",
+    name = "torch_so",
     deps = [":torch_lib"],
+)
+
+cc_library(
+    name = "torch",
+    srcs = [":torch_so"],
+    deps = torch_deps,
     visibility = ["//visibility:public"],
 )
 
@@ -1713,6 +1721,12 @@ cc_library(
     ],
 )
 
+torch_python_deps = [
+        ":torch",
+        ":shm",
+        "@pybind11",
+    ] + if_cuda(["@//third_party:nccl"])
+
 cc_library(
     name = "torch_python_lib",
     srcs = libtorch_python_core_sources
@@ -1723,17 +1737,19 @@ cc_library(
         "torch/csrc/generic/*.cpp",
     ]),
     copts = COMMON_COPTS + if_cuda(["-DUSE_CUDA=1"]),
-    deps = [
-        ":torch",
-        ":shm",
-        "@pybind11",
-    ] + if_cuda(["@//third_party:nccl"]),
+    deps = torch_python_deps,
     alwayslink = True,
 )
 
 cc_shared_library(
-    name = "torch_python",
+    name = "torch_python_so",
     deps = [":torch_python_lib"],
+)
+
+cc_library(
+    name = "torch_python",
+    srcs = [":torch_python_so"],
+    deps = torch_python_deps,
     visibility = ["//visibility:public"],
 )
 
