@@ -1651,7 +1651,7 @@ torch_sources = ({
 }).keys()
 
 cc_library(
-    name = "torch",
+    name = "torch_lib",
     srcs = if_cuda(glob(
         libtorch_cuda_sources,
         exclude = [
@@ -1664,7 +1664,6 @@ cc_library(
     defines = [
         "CAFFE2_NIGHTLY_VERSION=20200115",
     ],
-    visibility = ["//visibility:public"],
     deps = [
         ":caffe2",
         ":torch_headers",
@@ -1675,6 +1674,12 @@ cc_library(
         "@cutlass",
     ]),
     alwayslink = True,
+)
+
+cc_shared_library(
+    name = "torch",
+    deps = [":torch_lib"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -1709,7 +1714,7 @@ cc_library(
 )
 
 cc_library(
-    name = "torch_python",
+    name = "torch_python_lib",
     srcs = libtorch_python_core_sources
         + if_cuda(libtorch_python_cuda_sources)
         + if_cuda(libtorch_python_distributed_sources)
@@ -1724,6 +1729,11 @@ cc_library(
         "@pybind11",
     ] + if_cuda(["@//third_party:nccl"]),
     alwayslink = True,
+)
+
+cc_shared_library(
+    name = "torch_python",
+    deps = [":torch_python_lib"],
     visibility = ["//visibility:public"],
 )
 
