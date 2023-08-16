@@ -24,10 +24,12 @@ def define_targets(rules):
         visibility = ["//visibility:public"],
         deps = [
             ":caffe2_headers",
-            "@com_github_glog//:glog",
             "//c10",
             "//third_party/miniz-2.1.0:miniz",
-        ],
+        ] + rules.select({
+            "//c10:using_glog": ["@com_github_glog//:glog"],
+            "//conditions:default": [],
+        }),
     )
 
     #
