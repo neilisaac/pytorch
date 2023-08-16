@@ -371,6 +371,7 @@ cc_library(
         "@fbgemm",
         "@ideep",
     ],
+    linkopts = ["-lrt"], # shm_open/shm_unlink
     alwayslink = True,
 )
 
@@ -1374,7 +1375,6 @@ cc_library(
         "caffe2/image/*.h",
     ])) + [":generated_caffe2_aten_op_headers"],
     copts = CAFFE2_COPTS,
-    linkopts = ["-lblas"],
     includes = [
         "caffe2/contrib/aten",
         "caffe2/core/nomnigraph/include",
@@ -1464,6 +1464,7 @@ cc_library(
             "@tensorpipe//:tensorpipe_cpu",
         ],
     ),
+    linkopts = ["-lblas"],
     alwayslink = True,
 )
 
@@ -1678,6 +1679,7 @@ cc_library(
 
 cc_shared_library(
     name = "torch_so",
+    shared_lib_name = "libtorch.so",
     deps = [":torch_lib"],
 )
 
@@ -1740,6 +1742,7 @@ cc_library(
 
 cc_shared_library(
     name = "torch_python_so",
+    shared_lib_name = "libtorch_python.so",
     deps = [":torch_python_lib"],
     dynamic_deps = [":torch_so"],
 )
